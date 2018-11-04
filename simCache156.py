@@ -1,4 +1,5 @@
 import sys
+import argparse
 
 
 def read_address(address):
@@ -22,4 +23,11 @@ def simulate(cs, bs, assoc, trace):
 if __name__ == '__main__':
   if sys.version_info[0] != 3:
     print("WARNING: You do not seem to use Python 3.")
-  simulate(*sys.argv[1:])
+
+  parser = argparse.ArgumentParser()
+  for arg, arg_type in (('cs', int),
+                        ('bs', int),
+                        ('assoc', int),
+                        ('trace', str)):
+    parser.add_argument(arg, type=arg_type)
+  simulate(**vars(parser.parse_args()))
