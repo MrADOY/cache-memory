@@ -27,17 +27,17 @@ def simulate(cs, bs, assoc, trace):
             for i in range(assoc)] for j in range(nbe)]
   with open(trace) as f:
     for line in f:
-      instruction, address = line[:1].lower(), int(line[1:].strip(), 16)
+      instruction, address = line[:1], int(line[1:], 16)
       numbloc = address * 4 // bs
       index = numbloc % nbe
       tag = numbloc // nbe
-      {'w': write, 'r': read}.get(instruction)(cache, index, tag)
+      {'W': write, 'R': read}.get(instruction)(cache, index, tag)
       # TODO:
 
 
 if __name__ == '__main__':
-  if sys.version_info[0] != 3:
-    print("WARNING: You do not seem to use Python 3.")
+  if sys.version_info.major != 3:
+    raise Exception("Python 3 must be used.")
 
   parser = argparse.ArgumentParser()
   for arg, arg_type in (('cs', int),
