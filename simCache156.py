@@ -10,10 +10,10 @@ def locate(cache, index, tag):
 
 def read(cache, index, tag):
   if locate(cache, index, tag):
-    return True # Hit
+    return True  # Hit
 
   # TODO:
-  return False # Miss
+  return False  # Miss
 
 
 def write(cache, index, tag):
@@ -24,8 +24,7 @@ def write(cache, index, tag):
 def simulate(cs, bs, assoc, trace):
   nbe = cs // bs * assoc
   cache = [[{'valid': False, 'tag': 0}
-            for i in range(assoc)]
-            for j in range(nbe)]
+            for i in range(assoc)] for j in range(nbe)]
   with open(trace) as f:
     for line in f:
       instruction, address = line[:1].lower(), int(line[1:].strip(), 16)
