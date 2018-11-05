@@ -23,14 +23,16 @@ def write(cache, index, tag):
 
 def simulate(cs, bs, assoc, trace):
   nbe = cs // bs * assoc
-  cache = [[{'valid': False, 'tag': 0} for i in range(assoc)] for j in range(nbe)]
+  cache = [[{'valid': False, 'tag': 0}
+            for i in range(assoc)]
+            for j in range(nbe)]
   with open(trace) as f:
     for line in f:
       instruction, address = line[:1].lower(), int(line[1:].strip(), 16)
       numbloc = address * 4 // bs
       index = numbloc % nbe
       tag = numbloc // nbe
-      {'w': write_address, 'r': read_address}.get(instruction)(address)
+      {'w': write, 'r': read}.get(instruction)(cache, index, tag)
       # TODO:
 
 
