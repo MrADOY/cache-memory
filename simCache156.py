@@ -4,7 +4,7 @@ import argparse
 
 def locate(cache, index, tag):
   for i, block in enumerate(cache[index]):
-    if block['valid'] or block['tag'] is tag:
+    if block['valid'] and block['tag'] is tag:
       return i
 
 
