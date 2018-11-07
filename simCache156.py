@@ -31,7 +31,7 @@ def simulate(cs, bs, assoc, trace):
       numbloc = address// bs
       index = numbloc % nbe
       tag = numbloc // nbe
-      {'W': write, 'R': read}.get(instruction)(cache, index, tag)
+      misses += {'W': write, 'R': read}.get(instruction)(cache, index, tag)
       # TODO:
 
 
