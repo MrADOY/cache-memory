@@ -4,19 +4,24 @@ import argparse
 
 def locate(cache, index, tag):
   for i, block in enumerate(cache[index]):
-    if block['valid'] and block['tag'] is tag:
+    if block['valid'] and block['tag'] == tag:
       return i
 
 
 def replace_block(cache, index, tag):
-  # TODO: find the right block to replace (FIFO).
-  block = cache[index][0]
-
-  block.update({'valid': True, 'tag': tag})
-
+  # a block is free.
+  for block in cache[index]:
+    if not block['valid']:
+      block.update({'valid': True, 'tag': tag, 'counter' : 0})
+      update_counter(cache)
+      return
+  # no block are free so we have to find the oldest.
+  oldest_block = max(cache[index], key=lambda block: block['counter'])
+  oldest_block.update({'valid': True, 'tag': tag, 'counter' : 0})
+  update_counter(cache)
 
 def read(cache, index, tag):
-  if locate(cache, index, tag):
+  if locate(cache, index, tag) is not None:
     return 0  # Hit
 
   replace_block(cache, index, tag)
@@ -25,14 +30,19 @@ def read(cache, index, tag):
 
 def write(cache, index, tag):
   # TODO: Is this part done?
-  if locate(cache, index, tag):
+  if locate(cache, index, tag) is not None:
     return 0  # Hit
   return 1  # Miss
+
+def update_counter(cache):
+  for _set in cache:
+    for block in _set:
+      block['counter'] += 1
 
 
 def simulate(cs, bs, assoc, trace):
   nbe = cs // bs * assoc
-  cache = [[{'valid': False, 'tag': 0}
+  cache = [[{'valid': False, 'tag': 0, 'counter' : 0}
             for i in range(assoc)] for j in range(nbe)]
   misses = 0
   with open(trace) as f:
