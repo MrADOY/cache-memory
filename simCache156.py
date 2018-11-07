@@ -9,10 +9,14 @@ def locate(cache, index, tag):
 
 
 def replace_block(cache, index, tag):
-  # TODO: find the right block to replace (FIFO).
-  block = cache[index][0]
-
-  block.update({'valid': True, 'tag': tag})
+  # a block is free.
+  for block in cache[index]:
+    if not block['valid']:
+      block.update({'valid': True, 'tag': tag, 'counter' : 0})
+      return
+  # no block are free so we have to find the oldest.
+  oldest_block = max(cache[index], key=lambda block: block['counter'])
+  oldest_block.update({'valid': True, 'tag': tag, 'counter' : 0})
 
 
 def read(cache, index, tag):
@@ -29,10 +33,15 @@ def write(cache, index, tag):
     return 0  # Hit
   return 1  # Miss
 
+def update_counter(cache, nbe):
+  for set in cache:
+    for block in set:
+      block['counter'] += 1
+
 
 def simulate(cs, bs, assoc, trace):
   nbe = cs // bs * assoc
-  cache = [[{'valid': False, 'tag': 0}
+  cache = [[{'valid': False, 'tag': 0, 'counter' : 0}
             for i in range(assoc)] for j in range(nbe)]
   misses = 0
   with open(trace) as f:
@@ -42,6 +51,7 @@ def simulate(cs, bs, assoc, trace):
       index = numbloc % nbe
       tag = numbloc // nbe
       misses += {'W': write, 'R': read}.get(instruction)(cache, index, tag)
+      update_counter(cache, nbe)
       # TODO:
 
   print(misses)
