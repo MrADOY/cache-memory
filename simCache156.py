@@ -8,31 +8,43 @@ def locate(cache, index, tag):
       return i
 
 
+def replace_block(cache, index, tag):
+  # TODO: find the right block to replace (FIFO).
+  block = cache[index][0]
+
+  block.update({'valid': True, 'tag': tag})
+
+
 def read(cache, index, tag):
   if locate(cache, index, tag):
-    return 1  # Hit
+    return 0  # Hit
 
-  # TODO:
-  return 0  # Miss
+  replace_block(cache, index, tag)
+  return 1  # Miss
 
 
 def write(cache, index, tag):
-  # TODO:
-  pass
+  # TODO: Is this part done?
+  if locate(cache, index, tag):
+    return 0  # Hit
+  return 1  # Miss
 
 
 def simulate(cs, bs, assoc, trace):
   nbe = cs // bs * assoc
   cache = [[{'valid': False, 'tag': 0}
             for i in range(assoc)] for j in range(nbe)]
+  misses = 0
   with open(trace) as f:
     for line in f:
       instruction, address = line[:1], int(line[1:], 16)
-      numbloc = address// bs
+      numbloc = address // bs
       index = numbloc % nbe
       tag = numbloc // nbe
       misses += {'W': write, 'R': read}.get(instruction)(cache, index, tag)
       # TODO:
+
+  print(misses)
 
 
 if __name__ == '__main__':
