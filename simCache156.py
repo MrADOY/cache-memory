@@ -1,5 +1,14 @@
 import sys
 import argparse
+import time
+import itertools
+import threading
+
+
+def print_infinite_loader():
+  for char in itertools.cycle(('\\', '|', '/', '-')):
+    print('Computing...', char, '\r', end='')
+    time.sleep(.1)
 
 
 def locate(cache, index, tag):
@@ -18,8 +27,8 @@ def replace_block(cache, index, tag):
   else:
     # No block is free, so we have to find the oldest one
     block_to_replace = max(cache[index], key=lambda block: block['counter'])
-  block_to_replace.update({'valid': True, 'tag': tag, 'counter' : 0})
-  
+  block_to_replace.update({'valid': True, 'tag': tag, 'counter': 0})
+
   # Increment every counter from the cache line
   for block in cache[index]:
     block['counter'] += 1
@@ -42,9 +51,10 @@ def write(cache, index, tag):
 
 def simulate(cs, bs, assoc, trace):
   nbe = cs // (bs * assoc)
-  cache = [[{'valid': False, 'tag': 0, 'counter' : 0}
+  cache = [[{'valid': False, 'tag': 0, 'counter': 0}
             for i in range(assoc)] for j in range(nbe)]
   misses = 0
+  requests = {'W': 0, 'R': 0}
   with open(trace) as f:
     for line in f:
       instruction, address = line[:1], int(line[1:], 16)
@@ -52,9 +62,10 @@ def simulate(cs, bs, assoc, trace):
       index = numbloc % nbe
       tag = numbloc // nbe
       misses += {'W': write, 'R': read}.get(instruction)(cache, index, tag)
-      # TODO:
+      requests[instruction] += 1
 
-  print(misses)
+  writes, reads = requests.values()
+  return misses, reads, writes
 
 
 if __name__ == '__main__':
@@ -67,4 +78,13 @@ if __name__ == '__main__':
                         ('assoc', int),
                         ('trace', str)):
     parser.add_argument(arg, type=arg_type)
-  simulate(**vars(parser.parse_args()))
+
+  loader_thread = threading.Thread(target=print_infinite_loader, daemon=True)
+  loader_thread.start()
+  misses, reads, writes = simulate(**vars(parser.parse_args()))
+  loader_thread.join(timeout=0)
+
+  nb_requests = reads + writes
+  print('{} reads, {} writes ({} total)'.format(reads, writes, nb_requests),
+        '{} cache misses ({}%)'.format(misses, misses / nb_requests * 100),
+        sep='\n')
