@@ -9,16 +9,21 @@ def locate(cache, index, tag):
 
 
 def replace_block(cache, index, tag):
-  # a block is free.
+  block_to_replace = None
   for block in cache[index]:
     if not block['valid']:
-      block.update({'valid': True, 'tag': tag, 'counter' : 0})
-      update_counter(cache)
-      return
-  # no block are free so we have to find the oldest.
-  oldest_block = max(cache[index], key=lambda block: block['counter'])
-  oldest_block.update({'valid': True, 'tag': tag, 'counter' : 0})
-  update_counter(cache)
+      # A block is free
+      block_to_replace = block
+      break
+  else:
+    # No block is free, so we have to find the oldest one
+    block_to_replace = max(cache[index], key=lambda block: block['counter'])
+  block_to_replace.update({'valid': True, 'tag': tag, 'counter' : 0})
+  
+  # Increment every counter from the cache line
+  for block in cache[index]:
+    block['counter'] += 1
+
 
 def read(cache, index, tag):
   if locate(cache, index, tag) is not None:
@@ -34,14 +39,9 @@ def write(cache, index, tag):
     return 0  # Hit
   return 1  # Miss
 
-def update_counter(cache):
-  for _set in cache:
-    for block in _set:
-      block['counter'] += 1
-
 
 def simulate(cs, bs, assoc, trace):
-  nbe = cs // bs * assoc
+  nbe = cs // (bs * assoc)
   cache = [[{'valid': False, 'tag': 0, 'counter' : 0}
             for i in range(assoc)] for j in range(nbe)]
   misses = 0
