@@ -46,6 +46,7 @@ def write(cache, index, tag):
   # TODO: Is this part done?
   if locate(cache, index, tag) is not None:
     return 0  # Hit
+  replace_block(cache, index, tag)
   return 1  # Miss
 
 
