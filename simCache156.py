@@ -89,3 +89,9 @@ if __name__ == '__main__':
   print('{} reads, {} writes ({} total)'.format(reads, writes, nb_requests),
         '{} cache misses ({}%)'.format(misses, misses / nb_requests * 100),
         sep='\n')
+
+  # Quick "hack" to compute lost cycles
+  bs = vars(parser.parse_args())['bs']
+  penality = 12 + bs // 8
+  lost_cyles = penality * misses + 12 * writes
+  print("Lost cycles:", lost_cyles)
